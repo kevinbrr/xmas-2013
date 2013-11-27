@@ -59,7 +59,7 @@ function draw ()
         var y = mousePos.y-(imgFoolishness.getHeight()/2);
         
         layerFoolishness.setAbsolutePosition(x, y);
-        stage.draw();
+        layerFoolishness.batchDraw();
     });
 
 
