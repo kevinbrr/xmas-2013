@@ -21,6 +21,14 @@ function loadImages(sources, callback)
 }
 
 /**
+ * Returns a random integer between min and max
+ * Using Math.round() will give you a non-uniform distribution!
+ */
+function getRandomInt (min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+/**
  * Draw everything
  */
 function draw () 
@@ -42,6 +50,7 @@ function draw ()
     });
     layerBg.add(imgBg);
     
+    // draw mister foolishness
     var layerFoolishness = new Kinetic.Layer();
     var imgFoolishness = new Kinetic.Image({
         x: 0,
@@ -50,9 +59,10 @@ function draw ()
         width:  134,
         height: 309
     });
+    layerFoolishness.setAbsolutePosition(300, 200);
     layerFoolishness.add(imgFoolishness);
 
-
+    // make mister foolishness move
     stage.on('mousemove', function() {
         var mousePos = stage.getPointerPosition();
         var x = mousePos.x-(imgFoolishness.getWidth()/2);
@@ -62,10 +72,54 @@ function draw ()
         layerFoolishness.batchDraw();
     });
 
+    // draw angel
+    var angelLayers = [];
+    for (var i=0; i<5; i++) {
+        var layerAngel = new Kinetic.Layer();
+        var imgAngel = new Kinetic.Image({
+            x: 0,
+            y: 0,
+            image: loadedImages.angel,
+            width: 140,
+            height: 108
+        });
+        layerAngel.setAbsolutePosition(
+            getRandomInt(0, 700), 
+            getRandomInt(0, 150)
+        );
+        layerAngel.add(imgAngel);
+        angelLayers.push(layerAngel);
+    }
 
+    // add layers to stage
     stage.add(layerBg);
+    for (var i=0; i<angelLayers.length; i++) {
+        stage.add(angelLayers[i]);
+    }
     stage.add(layerFoolishness);
 
+    // animate angels
+    var amplitude = 1;
+    var period = 2000;
+    var centerX = stage.getWidth() / 2;
+    var centerY = stage.getHeight() / 2;
+
+    var anim = new Kinetic.Animation(function (frame) {
+        var time = frame.time,
+            timeDiff = frame.timeDiff,
+            frameRate = frame.frameRate;
+
+        for (var i=0; i<angelLayers.length; i++) {
+            // original formula: amplitude * Math.sin(frame.time * 2 * Math.PI / period)
+            var offset = amplitude * Math.sin(frame.time * (i+1) * Math.PI / period);
+            var angel = angelLayers[i];
+            angel.setAbsolutePosition(
+                angel.getX() + offset,
+                angel.getY() - offset
+            );
+        }
+    }, angelLayers);
+    anim.start();
 }
 
 /**
@@ -75,7 +129,8 @@ var loadedImages = {};
 loadImages(
     {
         bg: 'img/bg.jpg',
-        foolishness: 'img/foolishness.png'
+        foolishness: 'img/foolishness.png',
+        angel: 'img/angel.png'
     },
     function (images) {
         loadedImages = images
