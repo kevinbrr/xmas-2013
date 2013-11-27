@@ -68,34 +68,26 @@ function draw ()
         var x = mousePos.x-(imgFoolishness.getWidth()/2);
         var y = mousePos.y-(imgFoolishness.getHeight()/2);
         
-        layerFoolishness.setAbsolutePosition(x, y);
+        imgFoolishness.setAbsolutePosition(x, y);
         layerFoolishness.batchDraw();
     });
 
     // draw angel
-    var angelLayers = [];
+    var layerAngels = new Kinetic.Layer();
     for (var i=0; i<5; i++) {
-        var layerAngel = new Kinetic.Layer();
         var imgAngel = new Kinetic.Image({
-            x: 0,
-            y: 0,
+            x: getRandomInt(0, 700),
+            y: getRandomInt(0, 150),
             image: loadedImages.angel,
             width: 140,
             height: 108
         });
-        layerAngel.setAbsolutePosition(
-            getRandomInt(0, 700), 
-            getRandomInt(0, 150)
-        );
-        layerAngel.add(imgAngel);
-        angelLayers.push(layerAngel);
+        layerAngels.add(imgAngel);
     }
 
     // add layers to stage
     stage.add(layerBg);
-    for (var i=0; i<angelLayers.length; i++) {
-        stage.add(angelLayers[i]);
-    }
+    stage.add(layerAngels);
     stage.add(layerFoolishness);
 
     // animate angels
@@ -109,16 +101,16 @@ function draw ()
             timeDiff = frame.timeDiff,
             frameRate = frame.frameRate;
 
-        for (var i=0; i<angelLayers.length; i++) {
+        var kids = layerAngels.getChildren();
+        kids.each(function (node, index) {
             // original formula: amplitude * Math.sin(frame.time * 2 * Math.PI / period)
-            var offset = amplitude * Math.sin(frame.time * (i+1) * Math.PI / period);
-            var angel = angelLayers[i];
-            angel.setAbsolutePosition(
-                angel.getX() + offset,
-                angel.getY() - offset
+            var offset = amplitude * Math.sin(frame.time * (index+1) * Math.PI / period);
+            node.setAbsolutePosition(
+                node.getX() + offset,
+                node.getY() - offset
             );
-        }
-    }, angelLayers);
+        });
+    }, layerAngels);
     anim.start();
 }
 
