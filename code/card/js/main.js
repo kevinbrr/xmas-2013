@@ -105,10 +105,23 @@ function draw ()
         kids.each(function (node, index) {
             // original formula: amplitude * Math.sin(frame.time * 2 * Math.PI / period)
             var offset = amplitude * Math.sin(frame.time * (index+1) * Math.PI / period);
-            node.setAbsolutePosition(
-                node.getX() + offset,
-                node.getY() - offset
-            );
+            var x = node.getX() + offset;
+            var y = node.getY() + offset;
+            
+            if (index%2) {
+                x = node.getX() - offset;
+                y = node.getY() + offset;
+            }
+            else if (index%3) {
+                x = node.getX() - offset;
+                y = node.getY() - offset;
+            }
+            else if (index%4) {
+                x = node.getX() + offset;
+                y = node.getY() - offset;
+            }
+
+            node.setAbsolutePosition(x, y);
         });
     }, layerAngels);
     anim.start();
