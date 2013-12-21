@@ -59,8 +59,15 @@ function draw ()
         width:  134,
         height: 309
     });
+    var hitPointMark = new Kinetic.Circle({
+        x: 0,
+        y: 0,
+        radius: 5,
+        fill: 'red'
+    });
     layerFoolishness.setAbsolutePosition(300, 200);
     layerFoolishness.add(imgFoolishness);
+    layerFoolishness.add(hitPointMark);
 
     // make mister foolishness move
     stage.on('mousemove', function() {
@@ -69,7 +76,31 @@ function draw ()
         var y = mousePos.y-(imgFoolishness.getHeight()/2);
         
         imgFoolishness.setAbsolutePosition(x, y);
+        hitPointMark.setAbsolutePosition(x+10, y+53);
         layerFoolishness.batchDraw();
+    });
+
+    // listen for click events
+    stage.on('click', function () { 
+        // var mousePos = stage.getPointerPosition();
+        // if (!mousePos) return;
+
+        // console.log(hitPointMark.getPosition());
+
+        var hitObject = layerAngels.getIntersection(hitPointMark.getAbsolutePosition());
+        
+        //console.log('klik', hitObject)
+        
+        hitObject.shape.data = {censured: true}
+    
+        for (var i=0; i<2; i++) {
+            layerAngels.add(
+                hitObject.shape.clone({
+                    x: getRandomInt(0, 700),
+                    y: getRandomInt(0, 150)    
+                })
+            );
+        }
     });
 
     // draw angel
@@ -107,7 +138,7 @@ function draw ()
             var offset = amplitude * Math.sin(frame.time * (index+1) * Math.PI / period);
             var x = node.getX() + offset;
             var y = node.getY() + offset;
-            
+
             if (index%2) {
                 x = node.getX() - offset;
                 y = node.getY() + offset;
@@ -120,6 +151,10 @@ function draw ()
                 x = node.getX() + offset;
                 y = node.getY() - offset;
             }
+
+            // if (node.data != undefined) {
+            //     console.log(node.data);
+            // }
 
             node.setAbsolutePosition(x, y);
         });
