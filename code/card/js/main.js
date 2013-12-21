@@ -1,4 +1,4 @@
-/*
+/**
  * Load images
  */
 function loadImages(sources, callback) 
@@ -27,6 +27,61 @@ function loadImages(sources, callback)
 function getRandomInt (min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
+
+/**
+ * Helper methods for creating angels
+ */
+var angelFactory = {
+    angels: [{
+        img: 'angel0',
+        width: 140,
+        height: 108
+    },
+    {
+        img: 'angel1',
+        width: 131,
+        height: 70
+    },
+    {
+        img: 'angel2',
+        width: 159,
+        height: 94
+    },
+    {
+        img: 'angel3',
+        width: 129,
+        height: 83
+    },
+    {
+        img: 'angel4',
+        width: 139,
+        height: 114
+    },
+    {
+        img: 'angel5',
+        width: 134,
+        height: 113
+    }],
+    createRandomNode: function () {
+        return this.createAngelNodeFromIndex(
+            getRandomInt(0, this.angels.length-1)
+        );
+    },
+    createNodeFromIndex: function (i) {
+        if (i >= this.angels.length) {
+            return false;
+        }
+        var angelSpecs = this.angels[i];
+        console.log(angelSpecs);
+        return new Kinetic.Image({
+            x: getRandomInt(0, 700),
+            y: getRandomInt(0, 150),
+            image: loadedImages[angelSpecs.img],
+            width: angelSpecs.width,
+            height: angelSpecs.height
+        });
+    }
+};
 
 /**
  * Draw everything
@@ -114,15 +169,11 @@ function draw ()
 
     // draw angel
     var layerAngels = new Kinetic.Layer();
-    for (var i=0; i<5; i++) {
-        var imgAngel = new Kinetic.Image({
-            x: getRandomInt(0, 700),
-            y: getRandomInt(0, 150),
-            image: loadedImages.angel,
-            width: 140,
-            height: 108
-        });
-        layerAngels.add(imgAngel);
+    for (var i=0; i<8; i++) {
+        var imgAngel = angelFactory.createNodeFromIndex(i%6);
+        if (imgAngel) {
+            layerAngels.add(imgAngel);
+        }
     }
 
     // add layers to stage
@@ -186,14 +237,6 @@ function draw ()
 
     }, [layerAngels, layerSatan]);
     anim.start();
-
-    var rotation = 0;
-    var direction = 1;
-
-    for (var i=0; i<540; i++) 
-    {
-        
-    }
 }
 
 /**
@@ -204,8 +247,15 @@ loadImages(
     {
         bg: 'img/bg.jpg',
         foolishness: 'img/foolishness.png',
-        angel: 'img/angel.png',
-        satan: 'img/satan.png'
+        angel0: 'img/angel0.png',
+        angel1: 'img/angel1.png',
+        angel2: 'img/angel2.png',
+        angel3: 'img/angel3.png',
+        angel4: 'img/angel4.png',
+        angel5: 'img/angel5.png',
+        satan: 'img/satan.png',
+        bartrans: 'img/censorbar-transparent.png',
+        baropaq: 'img/censorbaar-opaque.jpg'
     },
     function (images) {
         loadedImages = images
