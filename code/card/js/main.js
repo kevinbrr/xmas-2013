@@ -35,35 +35,41 @@ var angelFactory = {
     angels: [{
         img: 'angel0',
         width: 140,
-        height: 108
+        height: 108,
+        barPosition: {x: 64, y: 45}
     },
     {
         img: 'angel1',
         width: 131,
-        height: 70
+        height: 70,
+        barPosition: {x: 43, y: 38}
     },
     {
         img: 'angel2',
         width: 159,
-        height: 94
+        height: 94,
+        barPosition: {x: 55, y: 40}
     },
     {
         img: 'angel3',
         width: 129,
-        height: 83
+        height: 83,
+        barPosition: {x: 53, y: 56}
     },
     {
         img: 'angel4',
         width: 139,
-        height: 114
+        height: 114,
+        barPosition: {x: 53, y: 47}
     },
     {
         img: 'angel5',
         width: 134,
-        height: 113
+        height: 113,
+        barPosition: {x: 68, y: 51}
     }],
     createRandomNode: function () {
-        return this.createAngelNodeFromIndex(
+        return this.createNodeFromIndex(
             getRandomInt(0, this.angels.length-1)
         );
     },
@@ -71,15 +77,32 @@ var angelFactory = {
         if (i >= this.angels.length) {
             return false;
         }
-        var angelSpecs = this.angels[i];
-        console.log(angelSpecs);
-        return new Kinetic.Image({
-            x: getRandomInt(0, 700),
-            y: getRandomInt(0, 150),
-            image: loadedImages[angelSpecs.img],
-            width: angelSpecs.width,
-            height: angelSpecs.height
-        });
+        var angelSpecs = this.angels[i],
+            angelGroup = new Kinetic.Group({
+                x: getRandomInt(0, 700),
+                y: getRandomInt(0, 150),
+                width: angelSpecs.width,
+                height: angelSpecs.height
+            }),
+            angelImg = new Kinetic.Image({
+                name: 'imgAngel',
+                x: 0,
+                y: 0,
+                image: loadedImages[angelSpecs.img],
+            }),
+            barImg = new Kinetic.Image({
+                name: 'imgBar',
+                x: angelSpecs.barPosition.x,
+                y: angelSpecs.barPosition.y,
+                image: loadedImages['baropaq'],
+            });
+        
+        barImg.hide();
+
+        angelGroup.add(angelImg);
+        angelGroup.add(barImg);
+        
+        return angelGroup;
     }
 };
 
@@ -123,22 +146,31 @@ function draw ()
     imgSatan.setPosition(imgSatan.getX()+offsetLeft, imgSatan.getY()+offsetTop);
     
     // draw mister foolishness
-    var layerFoolishness = new Kinetic.Layer();
-    var imgFoolishness = new Kinetic.Image({
-        x: 0,
-        y: 0,
-        image: loadedImages.foolishness,
-        width:  134,
-        height: 309
-    });
-    var hitPointMark = new Kinetic.Circle({
-        x: 0,
-        y: 0,
-        radius: 5,
-        fill: 'red'
-    });
+    var layerFoolishness = new Kinetic.Layer(),
+        imgFoolishness = new Kinetic.Image({
+            x: 0,
+            y: 0,
+            image: loadedImages.foolishness,
+            width:  134,
+            height: 309
+        }),
+        hitPointMark = new Kinetic.Circle({
+            x: 0,
+            y: 0,
+            radius: 5,
+            fill: 'red',
+            opacity: 0
+        }),
+        censorBar = new Kinetic.Image({
+            x: 0,
+            y: 0,
+            image: loadedImages.bartrans,
+            width: 31,
+            height: 12
+        });
     layerFoolishness.setAbsolutePosition(300, 200);
     layerFoolishness.add(imgFoolishness);
+    layerFoolishness.add(censorBar);
     layerFoolishness.add(hitPointMark);
 
     // make mister foolishness move
@@ -149,28 +181,36 @@ function draw ()
         
         imgFoolishness.setAbsolutePosition(x, y);
         hitPointMark.setAbsolutePosition(x+10, y+53);
+        censorBar.setAbsolutePosition(x-5, y+47);
         layerFoolishness.batchDraw();
     });
 
     // listen for click events
     stage.on('click', function () { 
         var hitObject = layerAngels.getIntersection(hitPointMark.getAbsolutePosition());
-        hitObject.shape.data = {censured: true}
-    
+        
+        var angelGroup = hitObject.shape.parent,
+            imgAngel = hitObject.shape,
+            imgBar = angelGroup.find('.imgBar');
+
+        imgBar.show();
+
+        // clone multiple angels
         for (var i=0; i<2; i++) {
-            layerAngels.add(
-                hitObject.shape.clone({
-                    x: getRandomInt(0, 700),
-                    y: getRandomInt(0, 150)    
-                })
-            );
+            // var newAngel = angelGroup.clone({
+            //     x: getRandomInt(0, 700),
+            //     y: getRandomInt(0, 150)    
+            // });
+            // newAngel.find('.imgBar').hide();
+            var newAngel = angelFactory.createRandomNode();
+            layerAngels.add(newAngel);
         }
     });
 
     // draw angel
     var layerAngels = new Kinetic.Layer();
     for (var i=0; i<8; i++) {
-        var imgAngel = angelFactory.createNodeFromIndex(i%6);
+       var imgAngel = angelFactory.createNodeFromIndex(i%6);
         if (imgAngel) {
             layerAngels.add(imgAngel);
         }
@@ -218,10 +258,6 @@ function draw ()
                 y = node.getY() - offset;
             }
 
-            // if (node.data != undefined) {
-            //     console.log(node.data);
-            // }
-
             node.setAbsolutePosition(x, y);
         });
 
@@ -255,10 +291,10 @@ loadImages(
         angel5: 'img/angel5.png',
         satan: 'img/satan.png',
         bartrans: 'img/censorbar-transparent.png',
-        baropaq: 'img/censorbaar-opaque.jpg'
+        baropaq: 'img/censorbar-opaque.jpg'
     },
     function (images) {
-        loadedImages = images
+        loadedImages = images;
         draw();
     }
 );
