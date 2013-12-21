@@ -50,6 +50,23 @@ function draw ()
     });
     layerBg.add(imgBg);
     
+    // draw satan
+    var layerSatan = new Kinetic.Layer(),
+        imgSatan = new Kinetic.Image({
+            x: 110,
+            y: 400,
+            image: loadedImages.satan,
+            width: 239,
+            height: 185
+        }),
+        offsetLeft = imgSatan.getWidth()/2,
+        offsetTop = imgSatan.getHeight()-35;
+    layerSatan.add(imgSatan);
+
+    // set offset, so we have a centered rotation point
+    imgSatan.setOffset(offsetLeft, offsetTop);
+    imgSatan.setPosition(imgSatan.getX()+offsetLeft, imgSatan.getY()+offsetTop);
+    
     // draw mister foolishness
     var layerFoolishness = new Kinetic.Layer();
     var imgFoolishness = new Kinetic.Image({
@@ -82,15 +99,7 @@ function draw ()
 
     // listen for click events
     stage.on('click', function () { 
-        // var mousePos = stage.getPointerPosition();
-        // if (!mousePos) return;
-
-        // console.log(hitPointMark.getPosition());
-
         var hitObject = layerAngels.getIntersection(hitPointMark.getAbsolutePosition());
-        
-        //console.log('klik', hitObject)
-        
         hitObject.shape.data = {censured: true}
     
         for (var i=0; i<2; i++) {
@@ -119,13 +128,19 @@ function draw ()
     // add layers to stage
     stage.add(layerBg);
     stage.add(layerAngels);
+    stage.add(layerSatan);
     stage.add(layerFoolishness);
+    
 
     // animate angels
-    var amplitude = 1;
-    var period = 2000;
-    var centerX = stage.getWidth() / 2;
-    var centerY = stage.getHeight() / 2;
+    var amplitude = 1,
+        period = 2000,
+        centerX = stage.getWidth()/2,
+        centerY = stage.getHeight()/2,
+        rotation = 0,
+        rotateDirection = 1,
+        rotationSpan = 22.5,
+        rotationSpeed = 0.75;
 
     var anim = new Kinetic.Animation(function (frame) {
         var time = frame.time,
@@ -158,8 +173,27 @@ function draw ()
 
             node.setAbsolutePosition(x, y);
         });
-    }, layerAngels);
+
+        // rotate satan
+        rotation = (rotation+rotationSpeed)%360;        
+        var a = rotation%rotationSpan;
+
+        if (a==0)                       rotateDirection = rotateDirection == 0 ? 1 : 0;
+        if (rotateDirection == 0)       newRotation = a-(rotationSpan/2);
+        else if (rotateDirection == 1)  newRotation = rotationSpan-a-(rotationSpan/2);    
+
+        imgSatan.setRotationDeg(newRotation);
+
+    }, [layerAngels, layerSatan]);
     anim.start();
+
+    var rotation = 0;
+    var direction = 1;
+
+    for (var i=0; i<540; i++) 
+    {
+        
+    }
 }
 
 /**
@@ -170,7 +204,8 @@ loadImages(
     {
         bg: 'img/bg.jpg',
         foolishness: 'img/foolishness.png',
-        angel: 'img/angel.png'
+        angel: 'img/angel.png',
+        satan: 'img/satan.png'
     },
     function (images) {
         loadedImages = images
