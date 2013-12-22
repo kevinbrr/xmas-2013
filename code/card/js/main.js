@@ -29,6 +29,21 @@ function getRandomInt (min, max) {
 }
 
 /**
+ * Maps a number that falls between one range (origin) to another range (target)
+ */
+function mapNumber (number, originMin, originMax, targetMin, targetMax) {
+    return (number-originMin)/(originMax-originMin)*(targetMax-targetMin)+targetMin;
+}
+
+/**
+ * Transformation function to increase a (progressive) number up to a maximum 
+ * and decrease it to zero
+ */
+function swing (number, max) {
+    return (number%(max*2)<max) ? number%max : max-number%max;
+}
+
+/**
  * Helper methods for creating angels
  */
 var angelFactory = {
@@ -282,14 +297,21 @@ function draw ()
         });
 
         // rotate satan
-        rotation = (rotation+rotationSpeed)%360;        
-        var a = rotation%rotationSpan;
+        imgSatan.setRotationDeg(
+            mapNumber(
+                swing(frame.time, 800),
+                0, 800,
+                -(rotationSpan/2), rotationSpan/2
+            )
+            // use this for a more natural, eased rotation
+            // mapNumber(
+            //     Math.sin(frame.time*Math.PI/800), 
+            //     -1, 1, 
+            //     -(rotationSpan/2), rotationSpan/2
+            // )
+        );
 
-        if (a==0)                       rotateDirection = rotateDirection == 0 ? 1 : 0;
-        if (rotateDirection == 0)       newRotation = a-(rotationSpan/2);
-        else if (rotateDirection == 1)  newRotation = rotationSpan-a-(rotationSpan/2);    
 
-        imgSatan.setRotationDeg(newRotation);
 
     }, [layerAngels, layerSatan]);
     anim.start();
