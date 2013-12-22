@@ -78,11 +78,13 @@ var angelFactory = {
             return false;
         }
         var angelSpecs = this.angels[i],
+            offset = {x: angelSpecs.width/2, y: angelSpecs.height/2},
             angelGroup = new Kinetic.Group({
-                x: getRandomInt(0, 700),
-                y: getRandomInt(0, 150),
+                x: offset.x+getRandomInt(0, 700),
+                y: offset.y+getRandomInt(0, 150),
                 width: angelSpecs.width,
-                height: angelSpecs.height
+                height: angelSpecs.height,
+                offset: offset
             }),
             angelImg = new Kinetic.Image({
                 name: 'imgAngel',
@@ -187,21 +189,17 @@ function draw ()
 
     // listen for click events
     stage.on('click', function () { 
-        var hitObject = layerAngels.getIntersection(hitPointMark.getAbsolutePosition());
-        
-        var angelGroup = hitObject.shape.parent,
+        var hitObject = layerAngels.getIntersection(hitPointMark.getAbsolutePosition()),
+            angelGroup = hitObject.shape.parent,
             imgAngel = hitObject.shape,
             imgBar = angelGroup.find('.imgBar');
 
         imgBar.show();
 
+        angelGroup.data = {isHit: true};
+
         // clone multiple angels
         for (var i=0; i<2; i++) {
-            // var newAngel = angelGroup.clone({
-            //     x: getRandomInt(0, 700),
-            //     y: getRandomInt(0, 150)    
-            // });
-            // newAngel.find('.imgBar').hide();
             var newAngel = angelFactory.createRandomNode();
             layerAngels.add(newAngel);
         }
@@ -221,7 +219,6 @@ function draw ()
     stage.add(layerAngels);
     stage.add(layerSatan);
     stage.add(layerFoolishness);
-    
 
     // animate angels
     var amplitude = 1,
@@ -240,22 +237,45 @@ function draw ()
 
         var kids = layerAngels.getChildren();
         kids.each(function (node, index) {
-            // original formula: amplitude * Math.sin(frame.time * 2 * Math.PI / period)
-            var offset = amplitude * Math.sin(frame.time * (index+1) * Math.PI / period);
-            var x = node.getX() + offset;
-            var y = node.getY() + offset;
+            var x = node.getX(),
+                y = node.getY();
 
-            if (index%2) {
-                x = node.getX() - offset;
-                y = node.getY() + offset;
+            // fallen angel animation
+            if (node.data != undefined && node.data.isHit) 
+            {
+                if (node.data.isFalling == undefined) {
+                    node.data.isFalling = true;
+                    node.data.stopY = getRandomInt(450, 550);
+                }
+                if (y >= node.data.stopY) {
+                    node.data.isFalling = false;
+                    node.data.isFallen = true;
+                }
+
+                if (node.data.isFalling) {
+                    node.setRotationDeg((node.getRotationDeg()+10)%360);
+                    y += 10;
+                }
             }
-            else if (index%3) {
-                x = node.getX() - offset;
-                y = node.getY() - offset;
-            }
-            else if (index%4) {
+            // flying angel animation
+            else {
+                // original formula: amplitude * Math.sin(frame.time * 2 * Math.PI / period)
+                var offset = amplitude * Math.sin(frame.time * (index+1) * Math.PI / period);
                 x = node.getX() + offset;
-                y = node.getY() - offset;
+                y = node.getY() + offset;
+
+                if (index%2) {
+                    x = node.getX() - offset;
+                    y = node.getY() + offset;
+                }
+                else if (index%3) {
+                    x = node.getX() - offset;
+                    y = node.getY() - offset;
+                }
+                else if (index%4) {
+                    x = node.getX() + offset;
+                    y = node.getY() - offset;
+                }
             }
 
             node.setAbsolutePosition(x, y);
