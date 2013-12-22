@@ -156,6 +156,7 @@ function draw ()
         }),
         offsetLeft = imgSatan.getWidth()/2,
         offsetTop = imgSatan.getHeight()-35;
+        imgSatan.targetAngel = false;
     layerSatan.add(imgSatan);
 
     // set offset, so we have a centered rotation point
@@ -231,8 +232,8 @@ function draw ()
 
     // add layers to stage
     stage.add(layerBg);
-    stage.add(layerAngels);
     stage.add(layerSatan);
+    stage.add(layerAngels);
     stage.add(layerFoolishness);
 
     // animate angels
@@ -240,10 +241,8 @@ function draw ()
         period = 2000,
         centerX = stage.getWidth()/2,
         centerY = stage.getHeight()/2,
-        rotation = 0,
-        rotateDirection = 1,
         rotationSpan = 22.5,
-        rotationSpeed = 0.75;
+        fallenAngels = [];
 
     var anim = new Kinetic.Animation(function (frame) {
         var time = frame.time,
@@ -260,15 +259,21 @@ function draw ()
             {
                 if (node.data.isFalling == undefined) {
                     node.data.isFalling = true;
+                    node.data.rotateRight = getRandomInt(0, 1);
                     node.data.stopY = getRandomInt(450, 550);
                 }
-                if (y >= node.data.stopY) {
+                if (y >= node.data.stopY && !node.data.isFallen) {
                     node.data.isFalling = false;
                     node.data.isFallen = true;
+                    fallenAngels.push(node);
                 }
-
                 if (node.data.isFalling) {
-                    node.setRotationDeg((node.getRotationDeg()+10)%360);
+                    if (node.data.rotateRight) {
+                        node.setRotationDeg((node.getRotationDeg()+10)%360);
+                    }
+                    else {
+                        node.setRotationDeg((node.getRotationDeg()-10)%360);
+                    }
                     y += 10;
                 }
             }
@@ -311,7 +316,34 @@ function draw ()
             // )
         );
 
+        if (fallenAngels.length > 0 || imgSatan.targetAngel) {
+            var satanRight = imgSatan.getX()+imgSatan.getWidth()/2;
+            var satanLeft = imgSatan.getX()-imgSatan.getWidth()/2;
 
+            if (!imgSatan.targetAngel) {
+                console.log('set new target angel');
+                imgSatan.targetAngel = fallenAngels.shift();
+                imgSatan.targetAngelPosition = imgSatan.getX() < imgSatan.targetAngel.getX() 
+                    ? 'right' : 'left';
+            }
+            else {
+                if (imgSatan.targetAngelPosition == 'right'
+                    && satanRight < imgSatan.targetAngel.getX()) {
+                    console.log('move right');
+                    imgSatan.setX(imgSatan.getX()+5);
+                }
+                else if (imgSatan.targetAngelPosition == 'left'
+                    && satanLeft > imgSatan.targetAngel.getX()) {
+                    console.log('move left');
+                    imgSatan.setX(imgSatan.getX()-5);   
+                }
+                else {
+                    console.log('eat angel');
+                    imgSatan.targetAngel.hide();
+                    imgSatan.targetAngel = false;
+                }
+            }
+        }
 
     }, [layerAngels, layerSatan]);
     anim.start();
