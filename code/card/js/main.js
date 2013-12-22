@@ -214,10 +214,12 @@ function draw ()
 
         angelGroup.data = {isHit: true};
 
-        // clone multiple angels
-        for (var i=0; i<2; i++) {
-            var newAngel = angelFactory.createRandomNode();
-            layerAngels.add(newAngel);
+        if (layerAngels.getChildren().length < 25) {
+            // clone multiple angels
+            for (var i=0; i<2; i++) {
+                var newAngel = angelFactory.createRandomNode();
+                layerAngels.add(newAngel);
+            }
         }
     });
 
@@ -321,7 +323,6 @@ function draw ()
             var satanLeft = imgSatan.getX()-imgSatan.getWidth()/2;
 
             if (!imgSatan.targetAngel) {
-                console.log('set new target angel');
                 imgSatan.targetAngel = fallenAngels.shift();
                 imgSatan.targetAngelPosition = imgSatan.getX() < imgSatan.targetAngel.getX() 
                     ? 'right' : 'left';
@@ -329,17 +330,14 @@ function draw ()
             else {
                 if (imgSatan.targetAngelPosition == 'right'
                     && satanRight < imgSatan.targetAngel.getX()) {
-                    console.log('move right');
                     imgSatan.setX(imgSatan.getX()+5);
                 }
                 else if (imgSatan.targetAngelPosition == 'left'
                     && satanLeft > imgSatan.targetAngel.getX()) {
-                    console.log('move left');
                     imgSatan.setX(imgSatan.getX()-5);   
                 }
                 else {
-                    console.log('eat angel');
-                    imgSatan.targetAngel.hide();
+                    imgSatan.targetAngel.remove();
                     imgSatan.targetAngel = false;
                 }
             }
