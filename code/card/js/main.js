@@ -144,7 +144,7 @@ function draw ()
         height: 596
     }),
     initialAngels = 8,
-    maxAngels = 25;
+    maxAngels = 20;
 
     // draw background
     var layerBg = new Kinetic.Layer();
@@ -285,7 +285,7 @@ function draw ()
             name: 'label',
             x: 0,
             y: 0,
-            text: 'Game Over',
+            text: 'Enjoy the silence',
             fontFamily: 'Calibri',
             fontSize: 30,
             fill: 'black'
