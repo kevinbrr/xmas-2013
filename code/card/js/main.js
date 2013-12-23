@@ -123,6 +123,16 @@ var angelFactory = {
     }
 };
 
+function drawAngels (numberOfAngels, layerAngels)
+{
+    for (var i=0; i<numberOfAngels; i++) {
+        var imgAngel = angelFactory.createNodeFromIndex(i%6);
+        if (imgAngel) {
+            layerAngels.add(imgAngel);
+        }
+    }
+}
+
 /**
  * Draw everything
  */
@@ -132,7 +142,9 @@ function draw ()
         container: 'card',
         width: 834,
         height: 596
-    });
+    }),
+    initialAngels = 8,
+    maxAngels = 25;
 
     // draw background
     var layerBg = new Kinetic.Layer();
@@ -204,38 +216,105 @@ function draw ()
     });
 
     // listen for click events
-    stage.on('click', function () { 
-        var hitObject = layerAngels.getIntersection(hitPointMark.getAbsolutePosition()),
-            angelGroup = hitObject.shape.parent,
+    stage.on('click', function () 
+    {
+        // check if angels are hit 
+        var hitObject = layerAngels.getIntersection(hitPointMark.getAbsolutePosition());
+        if (hitObject && hitObject.shape) {
+            var angelGroup = hitObject.shape.parent,
             imgAngel = hitObject.shape,
             imgBar = angelGroup.find('.imgBar');
-
-        imgBar.show();
-
-        angelGroup.data = {isHit: true};
-
-        if (layerAngels.getChildren().length < 25) {
-            // clone multiple angels
-            for (var i=0; i<2; i++) {
-                var newAngel = angelFactory.createRandomNode();
-                layerAngels.add(newAngel);
+            imgBar.show();
+            angelGroup.data = {isHit: true};
+            if (layerAngels.getChildren().length < maxAngels) {
+                // clone multiple angels
+                for (var i=0; i<2; i++) {
+                    var newAngel = angelFactory.createRandomNode();
+                    layerAngels.add(newAngel);
+                }
             }
         }
+
+        // check if game over text is hit
+        var hitText = layerText.getIntersection(hitPointMark.getAbsolutePosition());
+        if (hitText && hitText.shape) {
+            var bg = hitText.shape.parent.find('.bg')[0],
+                rotateRight = getRandomInt(0, 1);
+            
+            bg.setFill('#000');
+
+            var textAnim = new Kinetic.Animation(function (frame) {
+                if (groupText.getY() > stage.getHeight()) {
+                    textAnim.stop();
+                    bg.setFill('#fff');
+                    groupText.hide();
+                    groupText.setRotationDeg(0);
+                    groupText.setPosition({
+                        x: stage.getWidth()/2, y: 150
+                    });
+                    gameOver = false;
+                    drawAngels(initialAngels, layerAngels);
+                    return;
+                }
+
+                if (rotateRight) {
+                    groupText.setRotationDeg((groupText.getRotationDeg()+10)%360);
+                }
+                else {
+                    groupText.setRotationDeg((groupText.getRotationDeg()-10)%360);
+                }
+                groupText.setY(groupText.getY()+10);
+            },
+            layerText);
+            textAnim.start();
+        }
+        
     });
 
-    // draw angel
+    // draw angels
     var layerAngels = new Kinetic.Layer();
-    for (var i=0; i<8; i++) {
-       var imgAngel = angelFactory.createNodeFromIndex(i%6);
-        if (imgAngel) {
-            layerAngels.add(imgAngel);
-        }
-    }
+    drawAngels(initialAngels, layerAngels);
+
+    // create text layer for game over text
+    var layerText = new Kinetic.Layer(),
+        groupText = new Kinetic.Group({
+            x: stage.getWidth()/2,
+            y: 150
+        }),
+        textEnd = new Kinetic.Text({
+            name: 'label',
+            x: 0,
+            y: 0,
+            text: 'Game Over',
+            fontFamily: 'Calibri',
+            fontSize: 30,
+            fill: 'black'
+          }),
+        bgText = new Kinetic.Rect({
+            name: 'bg',
+            x: 0,
+            y: 0,
+            fill: '#fff',
+            width: textEnd.getWidth(),
+            height: textEnd.getHeight()
+        });
+    
+    groupText.setOffset({
+        x: textEnd.getWidth()/2,
+        y: textEnd.getHeight()/2
+    });
+    
+    groupText.hide();
+
+    groupText.add(bgText);
+    groupText.add(textEnd); 
+    layerText.add(groupText);
 
     // add layers to stage
     stage.add(layerBg);
     stage.add(layerSatan);
     stage.add(layerAngels);
+    stage.add(layerText);
     stage.add(layerFoolishness);
 
     // animate angels
@@ -244,14 +323,21 @@ function draw ()
         centerX = stage.getWidth()/2,
         centerY = stage.getHeight()/2,
         rotationSpan = 22.5,
-        fallenAngels = [];
+        fallenAngels = [],
+        gameOver = false;
 
     var anim = new Kinetic.Animation(function (frame) {
         var time = frame.time,
             timeDiff = frame.timeDiff,
-            frameRate = frame.frameRate;
+            frameRate = frame.frameRate,
+            kids = layerAngels.getChildren();
 
-        var kids = layerAngels.getChildren();
+        if (kids.length-fallenAngels.length < 1 && !gameOver) {
+            gameOver = true;
+            groupText.show();
+            layerText.draw();
+        }
+
         kids.each(function (node, index) {
             var x = node.getX(),
                 y = node.getY();
