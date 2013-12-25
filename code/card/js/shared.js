@@ -20,6 +20,13 @@ function playSound(buffer, time) {
   source.connect(context.destination);
   source.start(time);
 }
+//mieke's toevoeging
+function stopSound(buffer, time) {
+var source = context.createBufferSource();
+  source.buffer = buffer;
+  source.connect(context.destination);
+  source.stop(time);
+}
 
 function loadSounds(obj, soundMap, callback) {
   // Array-ify
