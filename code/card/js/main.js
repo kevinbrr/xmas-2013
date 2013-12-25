@@ -252,7 +252,7 @@ function draw ()
             bg.setFill('#000');
 
             //sample.playSound(3);
-
+            var startY = groupText.getY();
             var textAnim = new Kinetic.Animation(function (frame) {
                 if (groupText.getY() > stage.getHeight()) {
                     textAnim.stop();                    
@@ -269,12 +269,12 @@ function draw ()
                 }
 
                 if (rotateRight) {
-                    groupText.setRotationDeg((groupText.getRotationDeg()+10)%360);
+                    groupText.setRotationDeg((frame.time*360/800)%360);
                 }
                 else {
-                    groupText.setRotationDeg((groupText.getRotationDeg()-10)%360);
+                    groupText.setRotationDeg(-((frame.time*360/800)%360));
                 }
-                groupText.setY(groupText.getY()+10);
+                groupText.setY(startY+frame.time*stage.getHeight()/1000);
             },
             layerText);
             textAnim.start();           
