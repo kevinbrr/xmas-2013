@@ -130,6 +130,7 @@ function drawAngels (numberOfAngels, layerAngels)
         if (imgAngel) {
             layerAngels.add(imgAngel);
         }
+       // sample.playSound(3);
     }
 }
 
@@ -145,6 +146,7 @@ function draw ()
     }),
     initialAngels = 8,
     maxAngels = 20;
+  
 
     // draw background
     var layerBg = new Kinetic.Layer();
@@ -218,9 +220,11 @@ function draw ()
     // listen for click events
     stage.on('click', function () 
     {
+    	
         // check if angels are hit 
         var hitObject = layerAngels.getIntersection(hitPointMark.getAbsolutePosition());
         if (hitObject && hitObject.shape) {
+        	
             var angelGroup = hitObject.shape.parent,
             imgAngel = hitObject.shape,
             imgBar = angelGroup.find('.imgBar');
@@ -231,6 +235,10 @@ function draw ()
                 for (var i=0; i<2; i++) {
                     var newAngel = angelFactory.createRandomNode();
                     layerAngels.add(newAngel);
+                  
+                    // play sound at new angel: hohoho bufferList[3]
+                    // sample.shootRound(0, 1, 1, 0, 1);
+                    //sample.playSound(0);
                 }
             }
         }
@@ -243,17 +251,20 @@ function draw ()
             
             bg.setFill('#000');
 
+            //sample.playSound(3);
+
             var textAnim = new Kinetic.Animation(function (frame) {
                 if (groupText.getY() > stage.getHeight()) {
-                    textAnim.stop();
+                    textAnim.stop();                    
                     bg.setFill('#fff');
                     groupText.hide();
                     groupText.setRotationDeg(0);
                     groupText.setPosition({
                         x: stage.getWidth()/2, y: 150
                     });
-                    gameOver = false;
+                    gameOver = false;              
                     drawAngels(initialAngels, layerAngels);
+                    
                     return;
                 }
 
@@ -266,14 +277,14 @@ function draw ()
                 groupText.setY(groupText.getY()+10);
             },
             layerText);
-            textAnim.start();
+            textAnim.start();           
         }
         
     });
 
     // draw angels
     var layerAngels = new Kinetic.Layer();
-    drawAngels(initialAngels, layerAngels);
+    //drawAngels(initialAngels, layerAngels);
 
     // create text layer for game over text
     var layerText = new Kinetic.Layer(),
@@ -285,7 +296,7 @@ function draw ()
             name: 'label',
             x: 0,
             y: 0,
-            text: 'Enjoy the silence',
+            text: 'Play',
             fontFamily: 'Calibri',
             fontSize: 30,
             fill: 'black'
@@ -304,8 +315,8 @@ function draw ()
         y: textEnd.getHeight()/2
     });
     
-    groupText.hide();
-
+    //groupText.hide();
+    
     groupText.add(bgText);
     groupText.add(textEnd); 
     layerText.add(groupText);
@@ -324,7 +335,7 @@ function draw ()
         centerY = stage.getHeight()/2,
         rotationSpan = 22.5,
         fallenAngels = [],
-        gameOver = false;
+        gameOver = true;
 
     var anim = new Kinetic.Animation(function (frame) {
         var time = frame.time,
@@ -335,6 +346,13 @@ function draw ()
         if (kids.length-fallenAngels.length < 1 && !gameOver) {
             gameOver = true;
             groupText.show();
+			textEnd.setText("Enjoy the silence");
+			bgText.setWidth(textEnd.getWidth());
+			bgText.setHeight(textEnd.getHeight());
+			groupText.setOffset({
+				x: textEnd.getWidth()/2,
+				y: textEnd.getHeight()/2
+			});
             layerText.draw();
         }
 
@@ -424,6 +442,9 @@ function draw ()
                 }
                 else {
                     imgSatan.targetAngel.remove();
+                    //play omnomnom Satan: bufferList[5]
+                    sample.shootRound(5, 1, 1, 0, 0);
+                   
                     imgSatan.targetAngel = false;
                 }
             }
@@ -432,6 +453,12 @@ function draw ()
     }, [layerAngels, layerSatan]);
     anim.start();
 }
+
+/**
+ * Do audio stuff
+ */
+var audio = new $.Audio();
+var sample = new audio.Sample();
 
 /**
  * Preload images
